@@ -22,7 +22,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import time, sys, smbus
+import time, sys
+
+from OmegaExpansion import onionI2C
+
+
 
 
 class MCP230XX:
@@ -30,7 +34,9 @@ class MCP230XX:
     def __init__(self, chip, i2cAddress, regScheme = '16bit'):
 
         self.i2cAddress = i2cAddress
-        self.bus =smbus.SMBus(1)
+        self.bus = onionI2C.OnionI2C(0)
+        # set the verbosity
+        self.bus.setVerbosity(-1)
         self.chip = chip
 
         if self.chip == 'MCP23008':
@@ -48,15 +54,18 @@ class MCP230XX:
         """single_access_read, function to read a single data register
         of the MCP230xx gpio expander"""                  
        
-        dataTransfer=self.bus.read_byte_data(self.i2cAddress,reg)
+        #dataTransfer=self.bus.read_byte_data(self.i2cAddress,reg)
+        dataTransfer = self.bus.readBytes(self.i2cAddress, reg, 1)
         
-        return dataTransfer
+        return dataTransfer[0]
 
     def single_access_write(self, reg=0x00, regValue=0x0):
         """single_access_write, function to write to a single data register
         of the MCP230xx gpio expander"""
         
-        self.bus.write_byte_data(self.i2cAddress, reg, regValue)
+        #self.bus.write_byte_data(self.i2cAddress, reg, regValue)
+        # print('onion-i2c:: writing to reg %s: %s'%(hex(reg), hex(regValue)))
+        self.bus.writeBytes(self.i2cAddress, reg, [regValue])
 
         return
 
@@ -430,7 +439,7 @@ class MCP230XX:
 
         #print('deleting')
 
-        self.register_reset()
+        #self.register_reset()
 
         return
 
